@@ -30,7 +30,7 @@ int menuAdmin(){
         printf("2 - GÉNÉRATION DE FICHIERS\n");
         printf("3 - MARQUER LES PRÉSENCES \n");
         printf("4 - ENVOYER UN MESSAGE \n");
-        printf("5 - Quitter \n");
+        printf("5 - Deconnection \n");
 
         printf("Faite un choix ici: \n");
         scanf("%d", &choixMenuAdmin);
@@ -115,7 +115,8 @@ void AfficherMenu(char msg[]) {
     printf("******************************\n");
 }
 
-void traitementAdmin(){
+void traitementAdmin(int * result){
+    
     Utilisateur utilisateurs[100];
     Apprenant apprenants[100];
     Presence presences[100];
@@ -336,6 +337,11 @@ void traitementAdmin(){
         }
     } while (choixMenuAdmin != 5);
     
+    if (choixMenuAdmin == 5)
+    {
+        *result = 0;
+    }
+    
 }
 
 void traitementApprenant(){
@@ -343,6 +349,12 @@ void traitementApprenant(){
 }
 
 int vueLogin(){
+    #ifdef _WIN32
+    system("cls"); // For Windows
+    #else
+        system("clear"); // For Unix-like systems
+    #endif
+
     char log[20];
     char pass[20];
     int nbUtilisateursFichier;
@@ -367,7 +379,7 @@ int vueLogin(){
         // printf("%s", u.mat);
        if (u.type == 1)
         {   
-            traitementAdmin();
+            traitementAdmin(&resultConnexion);
         }
         if (u.type == 2)
         {
