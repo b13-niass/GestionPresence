@@ -1,0 +1,1 @@
+void afficherUtilisateur(Utilisateur * u);

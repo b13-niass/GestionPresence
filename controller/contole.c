@@ -120,13 +120,32 @@ int login(char login[],char pass[], Utilisateur utilisateurs[], int taille, Util
     {
          if (!strcmp(utilisateurs[i].login,login) && !strcmp(utilisateurs[i].password,pass) )
         {
+            u->id = utilisateurs[i].id;
+            strcpy(u->mat, utilisateurs[i].mat);
             strcpy(u->login, login);
             strcpy(u->password, pass);
+            strcpy(u->nom, utilisateurs[i].nom);
+            strcpy(u->prenom, utilisateurs[i].prenom);
+            u->date_naiss.j = utilisateurs[i].date_naiss.j;
+            u->date_naiss.m = utilisateurs[i].date_naiss.m;
+            u->date_naiss.a = utilisateurs[i].date_naiss.a;
             u->type = utilisateurs[i].type;
             return 1;
         }
     }
     return 0;
+}
+
+void obtenirDateAujourdhui(int *jour, int *mois, int *annee, int * h, int * mn, int * s) {
+    time_t t = time(NULL);
+    struct tm *today = localtime(&t);
+
+    *jour = today->tm_mday;
+    *mois = today->tm_mon + 1;
+    *annee = today->tm_year + 1900;
+    *h = today->tm_hour;
+    *mn = today->tm_min;
+    *s = today->tm_sec;
 }
 
 // void genererMat(char m[], Apprenant e){
