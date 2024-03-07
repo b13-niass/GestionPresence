@@ -49,7 +49,6 @@ void saisiChaine(char chaine[], char msg[],char msgerr[]){
             while(1){
                 printf ("%s ", msg) ;
                 caractere = getchar();
-
                 while (caractere != '\n')
                 {
                     if (caractere == ' ')
@@ -73,17 +72,38 @@ void saisiChaine(char chaine[], char msg[],char msgerr[]){
                  printf("%s", msgerr);                   
                 }    
             }
+        // printf("%s", chaine);
 }
 
 
 void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
             char caractere;
+            struct termios oldt, newt;
             int i = 0, j = 0, nbrEspace = 0;
-            disableEcho(); 
-            while(1){
-                printf ("%s ", msg) ;
-                caractere = getchar();
 
+            // Turn off echoing
+            
+
+            // Read password character by character
+            // printf("Enter password: ");
+            // while ((caractere = getchar()) != '\n') {
+            //     putchar('*');
+            //     chaine[i] = caractere;
+            // }
+
+            // Restore terminal settings
+           
+
+
+            while(1){
+                tcgetattr(STDIN_FILENO, &oldt);
+                newt = oldt;
+                newt.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL | ICANON);
+                tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+                
+                printf ("%s ", msg);
+                caractere = getchar();
+                putchar('*');
                 while (caractere != '\n')
                 {
                     if (caractere == ' ')
@@ -92,7 +112,10 @@ void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
                     }else chaine[i] = caractere; i++;
 
                     caractere = getchar();
+                    putchar('*');
+
                 }
+                tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
                 if (i!=0)
                 {
                     if (nbrEspace != strlen(chaine))
@@ -107,7 +130,9 @@ void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
                  printf("%s", msgerr);                   
                 }    
             }
-        enableEcho();
+
+            
+       
 }
 
 
@@ -121,7 +146,7 @@ int login(char login[],char pass[], Utilisateur utilisateurs[], int taille, Util
          if (!strcmp(utilisateurs[i].login,login) && !strcmp(utilisateurs[i].password,pass) )
         {
             u->id = utilisateurs[i].id;
-            strcpy(u->mat, utilisateurs[i].mat);
+            // strcpy(u->mat, utilisateurs[i].mat);
             strcpy(u->login, login);
             strcpy(u->password, pass);
             strcpy(u->nom, utilisateurs[i].nom);

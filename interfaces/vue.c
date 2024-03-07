@@ -15,6 +15,27 @@ int verifierPresence(int idApprenant, Presence presences[], int nbrPresence){
     return 0;
 }
 
+Heure heurePresence(int idApprenant, Presence presences[], int nbrPresence){
+    Heure heu;
+    int j,m,a,h,mn,s;
+    obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
+
+        for (int i = 0; i < nbrPresence; i++)
+        {
+            if (presences[i].apprenant.id == idApprenant && j == presences[i].datePresence.j && m == presences[i].datePresence.m
+        && presences[i].datePresence.a == a)
+            {
+                heu.h = presences[i].heure.h;
+                heu.mn = presences[i].heure.mn;
+                heu.s = presences[i].heure.s;
+                break;
+            }
+            
+        }
+        
+    return heu;
+}
+
 int menuAdmin(){
     int choixMenuAdmin;
 
@@ -26,6 +47,7 @@ int menuAdmin(){
     // getchar();
     do
     {
+        AfficherMenu("Menu Admin");
         printf("1 - GESTION DES ÉTUDIANTS\n");
         printf("2 - GÉNÉRATION DE FICHIERS\n");
         printf("3 - MARQUER LES PRÉSENCES \n");
@@ -55,10 +77,11 @@ int menuApprenant(){
 
     do
     {
+        AfficherMenu("Menu Apprenant");
         printf("1 - MARQUER MA PRÉSENCE\n");
         printf("2 - NOMBRE DE MINUTES D’ABSENCE\n");
         printf("3 - MES MESSAGES (0) \n");
-        printf("4 - Quitter \n");
+        printf("4 - Déconnexion \n");
 
         printf("Faite un choix: \n");
         scanf("%d", &choixMenuApprenant);
@@ -115,19 +138,23 @@ void AfficherMenu(char msg[]) {
     printf("******************************\n");
 }
 
-void traitementAdmin(int * result){
+
+void traitementAdmin(int * result, Utilisateur * user){
     
     Utilisateur utilisateurs[100];
     Apprenant apprenants[100];
     Presence presences[100];
     Referenciel referenciels[100], ref;
-    int choixMenuAdmin, choixMarquerPresence, choixApprenant;
+    int choixMenuAdmin, choixMarquerPresence, choixApprenant, idApprenant;
     int nbrUser = lireFichierUtilisateurs(utilisateurs, "./data/files/utilisateurs.csv");
     int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
     int nbrRef = lireFichierReferentiel(referenciels, "./data/files/referenciel.csv");
     int nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
+    char matricule[10], passwordVerify[30], cl;
     int j,m,a,h,mn,s;
     obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
+
+
 
     do
     {
@@ -135,7 +162,7 @@ void traitementAdmin(int * result){
         if (choixMenuAdmin == 1)
         {
           
-          
+
           
         }
 
@@ -148,186 +175,58 @@ void traitementAdmin(int * result){
         {
               do
             {
-                 choixMarquerPresence = menuMarquerPresence();
-                 int cpt = 1;
-                 printf("liste des Apprenants pour ce Référentiel\n");
-                 if (choixMarquerPresence == 1)
-                 { 
+                    // getchar();
+                    while ((cl = getchar()) != '\n' && cl != EOF);
+                saisiChaine(matricule, "Donner le matricule (Q: pour quitter):", "");
+
+                if (matricule[0] == 'q' || matricule[0] == 'Q')
+                {
+                    saisiChainePassword(passwordVerify, "Mot de Pass.... :", "\xE2\x9D\x8CMP Obligatoire\n");
                     
-                    do
-                    {    
-                        for (int i = 0; i < nbrApprenant; i++)
+                        if (!strcmp(user->password, passwordVerify))
                         {
-                            for (int j = 0; j < nbrUser; j++)
-                            {
-                               
-                                if (utilisateurs[j].id == apprenants[i].u.id && apprenants[i].ref.id == 1)
-                                {
-                                    printf("%d) %s %s ", apprenants[i].id, utilisateurs[j].prenom, utilisateurs[j].nom );
-                                   
-                                    if (verifierPresence(apprenants[i].id, presences, nbrPresence))
-                                    {  
-                                        printf(GREEN"Present\n"RESET);
-                                    }else{
-                                        printf(RED"absent\n"RESET);
-                                    }
-                                    // cpt++;
-                                    break;
-
-                                }
-                                
-                            }
-                            
+                            break;
+                        }else{
+                            printf("\n \xE2\x9D\x8CMot de passe invalide!!\n");
                         }
-                        printf("0) Quitter \n");
-                        printf("Choisir un Apprenant pour marquer la présence : \n");
-                        scanf("%d", &choixApprenant);
-                        
-                        if (choixApprenant <= nbrApprenant && choixApprenant >= 1 )
+                        // while ((cl = getchar()) != '\n' && cl != EOF);
+                }
+                
+
+                if (matricule[0] != 'q' && matricule[0] != 'Q')
+                {
+                  
+                    idApprenant = testMatricule(matricule, apprenants, nbrApprenant);
+                    // printf("%d", idApprenant);
+                    if (idApprenant)
+                    {
+                        if (!verifierPresence(idApprenant, presences, nbrPresence))
                         {
-                            if (!verifierPresence(choixApprenant, presences, nbrPresence))
-                            {
-                                Presence presence;
-                                presence.apprenant.id = choixApprenant;
-                                presence.datePresence.a = a;
-                                presence.datePresence.m = m;
-                                presence.datePresence.j = j;
-                                presence.heure.h = h;
-                                presence.heure.mn = mn;
-                                presence.heure.s = s;
-                                presence.id = 2;
-                                ajouterPresence(presence, "./data/files/presence.csv");
-                                nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
-                                // printf("%d", nbrPresence);
-                            }else{
-                                printf("Cette apprenant est déjà présent\n");
-                            }
-                            
+                            Presence presence;
+                            presence.apprenant.id = idApprenant;
+                            presence.datePresence.a = a;
+                            presence.datePresence.m = m;
+                            presence.datePresence.j = j;
+                            presence.heure.h = h;
+                            presence.heure.mn = mn;
+                            presence.heure.s = s;
+                            presence.id = presences[nbrPresence-1].id + 1;
+                            ajouterPresence(presence, "./data/files/presence.csv");
+                            nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
+                            // printf("%d", nbrPresence);
+                            printf("\xE2\x9C\x85 Vous êtes maintenant présent\n");
+                        }else{
+                            Heure heure_p = heurePresence(idApprenant,presences,nbrPresence);
+                            printf("\xE2\x9C\x85  Cette apprenant est déjà présent\n %d:%d:%d",heure_p.h,heure_p.mn,heure_p.s);
                         }
                         
+                    }else{
+                        printf("\xE2\x9D\x8C Ce matricule n'est pas valide\n");
+                    }
 
-                    } while (choixApprenant <= nbrApprenant && choixApprenant > 0);
-                   
-                 }
-
-                 if (choixMarquerPresence == 2)
-                 {
-                    do
-                    {    
-                        for (int i = 0; i < nbrApprenant; i++)
-                        {
-                            for (int j = 0; j < nbrUser; j++)
-                            {
-                               
-                                if (utilisateurs[j].id == apprenants[i].u.id && apprenants[i].ref.id == 2)
-                                {
-                                    printf("%d) %s %s ", apprenants[i].id, utilisateurs[j].prenom, utilisateurs[j].nom );
-                                   
-                                    if (verifierPresence(apprenants[i].id, presences, nbrPresence))
-                                    {  
-                                        printf(GREEN"Present\n"RESET);
-                                    }else{
-                                        printf(RED"absent\n"RESET);
-                                    }
-                                    // cpt++;
-                                    break;
-
-                                }
-                                
-                            }
-                            
-                        }
-                        printf("0) Quitter \n");
-                        printf("Choisir un Apprenant pour marquer la présence : \n");
-                        scanf("%d", &choixApprenant);
-                        
-                        if (choixApprenant <= nbrApprenant && choixApprenant >= 1 )
-                        {
-                            if (!verifierPresence(choixApprenant, presences, nbrPresence))
-                            {
-                                Presence presence;
-                                presence.apprenant.id = choixApprenant;
-                                presence.datePresence.a = a;
-                                presence.datePresence.m = m;
-                                presence.datePresence.j = j;
-                                presence.heure.h = h;
-                                presence.heure.mn = mn;
-                                presence.heure.s = s;
-                                presence.id = 3;
-                                ajouterPresence(presence, "./data/files/presence.csv");
-                                nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
-                                // printf("%d", nbrPresence);
-                            }else{
-                                printf("Cette apprenant est déjà présent\n");
-                            }
-                            
-                        }
-                        
-
-                    } while (choixApprenant <= nbrApprenant && choixApprenant > 0);
-                   
-                 }
-
-                 if (choixMarquerPresence == 3)
-                 {
-                    do
-                    {    
-                        for (int i = 0; i < nbrApprenant; i++)
-                        {
-                            for (int j = 0; j < nbrUser; j++)
-                            {
-                               
-                                if (utilisateurs[j].id == apprenants[i].u.id && apprenants[i].ref.id == 3)
-                                {
-                                    printf("%d) %s %s ", apprenants[i].id, utilisateurs[j].prenom, utilisateurs[j].nom );
-                                   
-                                    if (verifierPresence(apprenants[i].id, presences, nbrPresence))
-                                    {  
-                                        printf(GREEN"Present\n"RESET);
-                                    }else{
-                                        printf(RED"absent\n"RESET);
-                                    }
-                                    // cpt++;
-                                    break;
-
-                                }
-                                
-                            }
-                            
-                        }
-                        printf("0) Quitter \n");
-                        printf("Choisir un Apprenant pour marquer la présence : \n");
-                        scanf("%d", &choixApprenant);
-                        
-                        if (choixApprenant <= nbrApprenant && choixApprenant >= 1 )
-                        {
-                            if (!verifierPresence(choixApprenant, presences, nbrPresence))
-                            {
-                                Presence presence;
-                                presence.apprenant.id = choixApprenant;
-                                presence.datePresence.a = a;
-                                presence.datePresence.m = m;
-                                presence.datePresence.j = j;
-                                presence.heure.h = h;
-                                presence.heure.mn = mn;
-                                presence.heure.s = s;
-                                presence.id = 4;
-                                ajouterPresence(presence, "./data/files/presence.csv");
-                                nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
-                                // printf("%d", nbrPresence);
-                            }else{
-                                printf("Cette apprenant est déjà présent\n");
-                            }
-                            
-                        }
-                        
-
-                    } while (choixApprenant <= nbrApprenant && choixApprenant > 0);
-                   
-                 }
-                 
-
-            } while (choixMarquerPresence != 4);
+                }
+                
+                } while (1);
             
         }
         
@@ -336,7 +235,11 @@ void traitementAdmin(int * result){
             
         }
     } while (choixMenuAdmin != 5);
-    
+    #ifdef _WIN32
+    system("cls"); // For Windows
+    #else
+        system("clear"); // For Unix-like systems
+    #endif
     if (choixMenuAdmin == 5)
     {
         *result = 0;
@@ -344,7 +247,82 @@ void traitementAdmin(int * result){
     
 }
 
-void traitementApprenant(){
+void traitementApprenant(int * result, Utilisateur * user){
+    Utilisateur utilisateurs[100];
+    Apprenant apprenants[100];
+    Presence presences[100];
+    Referenciel referenciels[100], ref;
+    int choixMenuApprenant, choixMarquerPresence, choixApprenant;
+    int nbrUser = lireFichierUtilisateurs(utilisateurs, "./data/files/utilisateurs.csv");
+    int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
+    int nbrRef = lireFichierReferentiel(referenciels, "./data/files/referenciel.csv");
+    int nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
+    int j,m,a,h,mn,s;
+    Apprenant app;
+    char cl;
+    obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
+
+    for (int i = 0; i < nbrApprenant; i++)
+    {
+        if (user->id == apprenants[i].u.id)
+        {
+            app.id = apprenants[i].id;
+            app.promo.id = apprenants[i].promo.id;
+            app.ref.id = apprenants[i].ref.id;
+            app.statut = apprenants[i].statut;
+            app.u.id = apprenants[i].u.id;
+            break;
+        }
+        
+    }
+    
+    // printf("%d", app.id);
+
+    do
+    {
+        choixMenuApprenant = menuApprenant();
+        if (choixMenuApprenant == 1)
+        {
+            
+            if (verifierPresence(app.id, presences, nbrPresence))
+            {
+                printf("\xE2\x9C\x85 Vous-êtes Déjà présent !!!! ");
+                // while ((cl = getchar()) != '\n' && cl != EOF);
+                getchar();
+                pause();
+            }else{
+                Presence presence;
+                presence.apprenant.id = app.id;
+                presence.datePresence.a = a;
+                presence.datePresence.m = m;
+                presence.datePresence.j = j;
+                presence.heure.h = h;
+                presence.heure.mn = mn;
+                presence.heure.s = s;
+                presence.id = presences[nbrPresence-1].id + 1;
+                ajouterPresence(presence, "./data/files/presence.csv");
+                nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
+                // printf("%d", nbrPresence);
+                printf("\xE2\x9C\x85 Vous êtes maintenant présent\n");
+            }
+            
+        }
+
+        if (choixMenuApprenant == 2)
+        {
+            
+        }
+    } while (choixMenuApprenant != 5);
+    #ifdef _WIN32
+    system("cls"); // For Windows
+    #else
+        system("clear"); // For Unix-like systems
+    #endif
+    if (choixMenuApprenant == 5)
+    {
+        *result = 0;
+    }
+
 
 }
 
@@ -358,11 +336,13 @@ int vueLogin(){
     char log[20];
     char pass[20];
     int nbUtilisateursFichier;
-    int resultConnexion;
+    int resultConnexion = 1, resultConnexionApp = 1;
     Utilisateur utilisateurs[100];
     Utilisateur u;
+    char cl;
 
     do{
+       
         AfficherMenu("Menu De connexion");
         saisiChaine(log, "Login:","Veuillez saisir un login\n");
         saisiChainePassword(pass, "Mot de passe :","Veuillez saisir un Mot de passe\n");
@@ -374,17 +354,19 @@ int vueLogin(){
         // printf("%d", nbUtilisateursFichier);
 
         resultConnexion = login(log, pass, utilisateurs, nbUtilisateursFichier, &u);
+        resultConnexionApp = login(log, pass, utilisateurs, nbUtilisateursFichier, &u);
        
         // afficherUtilisateur(&u);
         // printf("%s", u.mat);
        if (u.type == 1)
         {   
-            traitementAdmin(&resultConnexion);
+            traitementAdmin(&resultConnexion, &u);
+             while ((cl = getchar()) != '\n' && cl != EOF);
         }
         if (u.type == 2)
         {
-            traitementApprenant();
+            traitementApprenant(&resultConnexionApp, &u);
         }
-    }while(resultConnexion == 0);
+    }while(resultConnexion == 0 || resultConnexionApp == 0);
 }
 

@@ -41,7 +41,6 @@ typedef struct{
 
 typedef struct{
     int id;
-    char mat[50];
     char login[20];
     char password[20];
     char nom[20];
@@ -57,6 +56,7 @@ typedef struct{
 
 typedef struct{
     int id;
+    char mat[50];
     Utilisateur u;
     Promotion promo;
     Referenciel ref;

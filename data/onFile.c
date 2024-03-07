@@ -18,10 +18,10 @@ int lireFichierUtilisateurs(Utilisateur utilisateurs[], char *fichier) {
   }
 
   while (fgets(ligne, sizeof(ligne), fp)) {
-    sscanf(ligne, "%d,%[^,],%[^,],%[^,],%[^,],%[^,],%d,%d,%d,%d", 
-    &id, mat, login, motDePasse,nom,prenom,&jour, &mois, &annee , &type);
+    sscanf(ligne, "%d,%[^,],%[^,],%[^,],%[^,],%d,%d,%d,%d", 
+    &id, login, motDePasse,nom,prenom,&jour, &mois, &annee , &type);
      utilisateurs[nbUtilisateurs].id = id;
-    strcpy(utilisateurs[nbUtilisateurs].mat, mat);
+    // strcpy(utilisateurs[nbUtilisateurs].mat, mat);
     strcpy(utilisateurs[nbUtilisateurs].login, login);
     strcpy(utilisateurs[nbUtilisateurs].password, motDePasse);
     strcpy(utilisateurs[nbUtilisateurs].nom, nom);
@@ -67,6 +67,7 @@ int lireFichierAdmin(Admin admins[], char *fichier) {
 int lireFichierAprennant(Apprenant apprenants[], char *fichier) {
   FILE *fp;
   char ligne[100];
+  char mat[50];
   int idApprenant, idUser, idPromo, idRef, status, nbrApprenant = 0;
 
   fp = fopen(fichier, "r");
@@ -76,9 +77,10 @@ int lireFichierAprennant(Apprenant apprenants[], char *fichier) {
   }
 
   while (fgets(ligne, sizeof(ligne), fp)) {
-    sscanf(ligne, "%d,%d,%d,%d,%d", 
-    &idApprenant,&idUser, &idPromo, &idRef, &status);
+    sscanf(ligne, "%d,%[^,],%d,%d,%d,%d", 
+    &idApprenant,mat,&idUser, &idPromo, &idRef, &status);
     apprenants[nbrApprenant].id = idApprenant;
+    strcpy(apprenants[nbrApprenant].mat, mat);
     apprenants[nbrApprenant].u.id = idUser;
     apprenants[nbrApprenant].promo.id = idPromo;
     apprenants[nbrApprenant].ref.id = idRef;
@@ -200,6 +202,7 @@ void ajouterPresence(Presence nouvellePresence, char *fichier) {
 
     // Close the file
     fclose(fp);
+    
 }
 
 
