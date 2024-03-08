@@ -4,7 +4,13 @@ extern int lireFichierAprennant(Apprenant apprenants[], char *fichier);
 extern int lireFichierReferentiel(Referenciel referenciels[], char *fichier);
 extern int lireFichierPromo(Promotion promos[], char *fichier);
 extern int lireFichierPresence(Presence presences[], char *fichier);
+extern int lireFichierPresenceDate(Date dates[], char *fichier);
 extern void ajouterPresence(Presence nouvellePresence, char *fichier);
+extern void genererFichierPresence(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date,Date dates[], int nbrDate, char *fichier);
+
+extern void genererFichierPresence2(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier);
 
 // extern Utilisateur login(char login[],char pass[]);
 

@@ -183,6 +183,49 @@ int lireFichierPresence(Presence presences[], char *fichier) {
   return nbrPresence;
 }
 
+int lireFichierPresenceDate(Date dates[], char *fichier) {
+  FILE *fp;
+  char ligne[100];
+  int idPresence, idApprenant, j, m, a, h, mn, s, nbrDate = 0;
+
+  fp = fopen(fichier, "r");
+  if (fp == NULL) {
+    printf("Erreur d'ouverture du fichier %s.\n", fichier);
+    return -1;
+  }
+
+  while (fgets(ligne, sizeof(ligne), fp)) {
+    sscanf(ligne, "%d,%d,%d,%d,%d,%d,%d,%d", 
+    &idPresence,&idApprenant, &j, &m, &a, &h, &mn, &s);
+
+    // int tailletabDate = sizeof(dates)/sizeof(dates[0]);
+    int cpt = 0;
+    for (int i = 0; i < nbrDate; i++)
+    {
+        if (dates[i].a == a && dates[i].m == m && dates[i].j == j)
+        {
+          cpt = 1;
+          break;
+        }
+        
+    }
+    if (cpt == 0)
+    {
+      dates[nbrDate].a = a;
+      dates[nbrDate].m = m;
+      dates[nbrDate].j = j;
+      nbrDate++;
+    }
+   
+  }
+
+  // Fermeture du fichier
+  fclose(fp);
+
+  return nbrDate;
+}
+
+
 void ajouterPresence(Presence nouvellePresence, char *fichier) {
     FILE *fp;
     
@@ -203,6 +246,149 @@ void ajouterPresence(Presence nouvellePresence, char *fichier) {
     // Close the file
     fclose(fp);
     
+}
+
+void genererFichierPresence(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, Date dates[], int nbrDate, char *fichier) {
+   char ligne[500],cl;
+    FILE *fp;
+
+    fp = fopen(fichier, "w");
+    if (fp == NULL) {
+        printf("Erreur d'ouverture du fichier %s.\n", fichier);
+        return;
+    }
+
+for (int indate = 0; indate < nbrDate; indate++)
+{
+    char dateChaine[20];
+    sprintf(dateChaine,"Date: %d - %d - %d \n", dates[indate].j,dates[indate].m, dates[indate].a);
+
+    char ref[50];
+
+    fprintf(fp, "%s", dateChaine);
+
+    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel     | Date Naissance   | Statut |\n");
+    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+
+    for (int i = 0; i < nbrApp; i++)
+    {
+        for (int j = 0; j < nbrUser; j++)
+        {
+         
+           if (apprenants[i].u.id == users[j].id)
+           {  
+              if (verifierPresenceParDate(apprenants[i].id,presences,nbrPresence, dates[indate]))
+              {
+                 if (apprenants[i].ref.id == 1)
+                {
+                  strcpy(ref, refs[0].libelle);
+                }
+
+                if (apprenants[i].ref.id == 2)
+                {
+                  strcpy(ref, refs[1].libelle);
+                }
+
+                 if (apprenants[i].ref.id == 3)
+                {
+                  strcpy(ref, refs[2].libelle);
+                }
+
+                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d-%-3d-%-3d | %-6s |\n", 
+                      apprenants[i].mat,
+                      users[j].prenom,
+                      users[j].nom,
+                      ref,
+                      users[j].date_naiss.j,
+                      users[j].date_naiss.m,
+                      users[j].date_naiss.a,
+                      "Présent");
+                  fputs(ligne, fp);
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+----------------+--------+\n");
+                // }
+              }
+           }
+           
+        }
+    }    
+
+}
+    fclose(fp);
+
+    
+
+    printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
+
+   
+}
+
+void genererFichierPresence2(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier) {
+    char ligne[500],ref[50];
+    FILE *fp;
+    
+    fp = fopen(fichier, "w");
+    if (fp == NULL) {
+        printf("Erreur d'ouverture du fichier %s.\n", fichier);
+        return;
+    }
+
+    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel     | Date Naissance   | Statut |\n");
+    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+
+    for (int i = 0; i < nbrApp; i++)
+    {
+        for (int j = 0; j < nbrUser; j++)
+        {
+         
+           if (apprenants[i].u.id == users[j].id)
+           {  
+              if (verifierPresenceParDate(apprenants[i].id,presences,nbrPresence, date))
+              {
+
+                 if (apprenants[i].ref.id == 1)
+                {
+                  strcpy(ref, refs[0].libelle);
+                }
+
+                if (apprenants[i].ref.id == 2)
+                {
+                  strcpy(ref, refs[1].libelle);
+                }
+
+                 if (apprenants[i].ref.id == 3)
+                {
+                  strcpy(ref, refs[2].libelle);
+                }
+
+
+                //  if (apprenants[i].ref.id == refs[idRef-1].id)
+                // {
+                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d-%-3d-%-3d | %-6s |\n", 
+                      apprenants[i].mat,
+                      users[j].prenom,
+                      users[j].nom,
+                      ref,
+                      users[j].date_naiss.j,
+                      users[j].date_naiss.m,
+                      users[j].date_naiss.a,
+                      "Présent");
+                  fputs(ligne, fp);
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+                // }
+              }
+           }
+           
+        }
+    }
+    
+    fclose(fp);
+
+    printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
+
 }
 
 

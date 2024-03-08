@@ -6,3 +6,7 @@ extern void AfficherMenu(char msg[]);
 extern void traitementAdmin(int * result, Utilisateur * u);
 extern void traitementApprenant(int * result, Utilisateur * u);
 extern Heure heurePresence(int idApprenant, Presence presences[], int nbrPresence);
+extern int menuGenererFichier();
+extern int verifierPresence(int idApprenant, Presence presences[], int nbrPresence);
+extern int verifierPresenceParDate(int idApprenant, Presence presences[], int nbrPresence, Date date);
+extern int menuReferenciel();

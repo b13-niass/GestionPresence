@@ -10,7 +10,7 @@ void afficherUtilisateur(Utilisateur * u)
 
 int testMatricule(char matricule[], Apprenant apprenants[], int nbrApp){
     // printf("%s", apprenants[0].mat);
-    // printf("%s",matricule);
+    printf("%s",matricule);
     for (int i = 0; i < nbrApp; i++)
     {
         // printf("%d", strcmp(apprenants[i].mat, matricule));

@@ -14,15 +14,89 @@ void enableEcho() {
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
+int testSiAnneeBissextile(int annee){
+
+    if ((annee % 4 == 0 && annee % 100 != 0) || (annee % 400 == 0)) {
+            return 1;
+    } else {
+        return 0;
+    }
+
+}
+
+int calculNbrJourMois(int mois, int annee){
+    int nbrJour;
+
+        if (mois == 2)
+        {
+            if (testSiAnneeBissextile(annee))
+            {
+                nbrJour = 29;
+            }else{
+                nbrJour = 28;
+            }
+        }else if (mois == 4 || mois == 6 || mois == 9 || mois == 11 )
+        {
+            nbrJour = 30;
+        }else{
+            nbrJour = 31;
+        }
+
+    return nbrJour;
+}
+
+
+int testSiDateValide(int annee, int mois, int jour){
+    int validite;
+    int nbrJours = calculNbrJourMois(mois, annee);
+    // printf("%d", nbrJours);
+    if (annee > 0)
+    {
+        if (0 < mois && mois < 13)
+        {
+            if (1 <= jour && jour <= nbrJours)
+            {
+                validite = 1;
+            }else{
+                validite = 0;
+            }
+            
+        }else{
+            validite = 0;
+        }
+        
+    }else{
+        validite = 0;
+    }
+
+    return validite;
+}
+
+
 Date saisieDate(void)
 {
     Date d;
+    d.j = 0;
+    d.m = 0;
+    d.a = 0;
+    int j, m, a;
     puts("Entrez une date [j,m,a]");
     // scanf("%d%d%d", &d.j, &d.m, &d.a);
-    d.j = saisirInt(1, 31, "entrez le jour","entrer un jour valide");
-    d.m = saisirInt(1, 12, "entrez le mois","entrer un mois valide");
-    d.a = saisirInt(1, 2024, "entrez l'année","entrer une annee valide");
-    return d;
+
+
+    j = saisirIntDate(1, 31, "entrez le jour","entrer un jour valide");
+    m = saisirIntDate(1, 12, "entrez le mois","entrer un mois valide");
+    a = saisirIntDate(1, 2024, "entrez l'année","entrer une annee valide");
+    
+    if(testSiDateValide(a, m, j)){
+        d.j = j;
+        d.m = m;
+        d.a = a;
+        return d;
+    }else{
+        return d;
+    }
+
 }
 
 int saisirInt(int min, int max, char msg[],char msgerr[])
@@ -40,6 +114,55 @@ int saisirInt(int min, int max, char msg[],char msgerr[])
     } while (x<min || x>max);
 
     return x;
+}
+
+int saisirIntDate(int min, int max, char msg[],char msgerr[])
+{
+    int x;
+    char input[100]; 
+    do
+    {
+         printf("%s: ", msg);
+        scanf("%s", input);
+
+        // Tente de convertir la chaîne en un entier
+        if (sscanf(input, "%d", &x) != 1 || x < min || x > max) {
+            printf("%s\n", msgerr);
+        }
+
+        
+    } while (x<min || x>max);
+
+    return x;
+}
+
+
+int saisirDate(Date *date, char msg[], char msgerr[]) {
+    char input[20];  // ajustez la taille selon vos besoins
+    time_t t = time(NULL);
+    struct tm *today = localtime(&t);
+
+    do {
+        printf("Entrez la date (format : jour/mois/annee) : ");
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            printf("Erreur de lecture.\n");
+            return -1;
+        }
+
+        size_t length = strlen(input);
+        if (length > 0 && input[length - 1] == '\n') {
+            input[length - 1] = '\0';
+        }
+
+        if (sscanf(input, "%d/%d/%d", &date->j, &date->m, &date->a) != 3 || !testSiDateValide(date->a, date->m, date->j) 
+        || (date->j > today->tm_mday && date->m >= today->tm_mon + 1 && date->a >= today->tm_year + 1900)) {
+            printf("Date invalide. Veuillez réessayer.\n");
+        } 
+        // (date->j > today->tm_mday && date->m > today->tm_mon + 1 && date->a > today->tm_year + 1900)
+    } while (!testSiDateValide(date->a, date->m, date->j) 
+        || (date->j > today->tm_mday && date->m >= today->tm_mon + 1 && date->a >= today->tm_year + 1900));
+
+    return 1;  // Succès
 }
 
 void saisiChaine(char chaine[], char msg[],char msgerr[]){
@@ -72,6 +195,7 @@ void saisiChaine(char chaine[], char msg[],char msgerr[]){
                  printf("%s", msgerr);                   
                 }    
             }
+            chaine[i] = '\0';
         // printf("%s", chaine);
 }
 
@@ -129,6 +253,8 @@ void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
                 {
                  printf("%s", msgerr);                   
                 }    
+
+                 chaine[i] = '\0';
             }
 
             
@@ -171,6 +297,30 @@ void obtenirDateAujourdhui(int *jour, int *mois, int *annee, int * h, int * mn, 
     *h = today->tm_hour;
     *mn = today->tm_min;
     *s = today->tm_sec;
+}
+
+Heure obtenirHeure() {
+    Heure h;
+    time_t t = time(NULL);
+    struct tm *today = localtime(&t);
+
+    h.h = today->tm_hour;
+    h.mn = today->tm_min;
+    h.s = today->tm_sec;
+    
+    return h;
+}
+
+Date obtenirDateAujourdhui2() {
+    Date d;
+    time_t t = time(NULL);
+    struct tm *today = localtime(&t);
+
+    d.j = today->tm_mday;
+    d.m = today->tm_mon + 1;
+    d.a = today->tm_year + 1900;
+
+    return d;
 }
 
 // void genererMat(char m[], Apprenant e){
