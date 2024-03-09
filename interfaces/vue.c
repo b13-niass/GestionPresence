@@ -212,6 +212,68 @@ int menuReferenciel(){
     return choixReferenciel;
 }
 
+int menuListeApprenant(){
+    int choixListeApprenant;
+    Utilisateur utilisateurs[100];
+    Apprenant apprenants[100];
+    int nbrUser = lireFichierUtilisateurs(utilisateurs, "./data/files/utilisateurs.csv");
+    int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
+    char ref[20];
+    #ifdef _WIN32
+    system("cls"); // For Windows
+    #else
+        system("clear"); // For Unix-like systems
+    #endif
+
+    AfficherMenu("Liste des Apprenants");
+    for (int i = 0; i < nbrApprenant; i++)
+    {
+        
+        for (int j = 0; j < nbrUser; j++)
+        {
+            if (apprenants[i].u.id == utilisateurs[j].id)
+            {   getReferentielName(apprenants[i].ref.id,ref);
+                printf("%d - %s %s %s %s\n", i+1, 
+                apprenants[i].mat, utilisateurs[j].prenom,
+                utilisateurs[j].nom, ref);
+            }
+            
+        }
+
+    }
+}
+
+
+int menuSendMessage(){
+    int choixSendMessage;
+
+    #ifdef _WIN32
+    system("cls"); // For Windows
+    #else
+        system("clear"); // For Unix-like systems
+    #endif
+    // getchar();
+    do
+    {
+        AfficherMenu("Envoyer Message");
+        printf("1 - À tous\n");
+        printf("2 - À une classe\n");
+        printf("3 - Par sélectionr\n");
+        printf("4 - Quitter \n");
+
+        printf("Faite un choix ici: \n");
+        scanf("%d", &choixSendMessage);
+
+        if (choixSendMessage < 1 || choixSendMessage > 4)
+        {
+            printf("Faite un choix entre 1, 2, 3 et 4\n");
+        }
+        
+    } while (choixSendMessage <1 || choixSendMessage > 4);
+
+    return choixSendMessage;
+}
+
 
 void AfficherMenu(char msg[]) {
     printf("\n******************************\n");
@@ -227,7 +289,7 @@ void traitementAdmin(int * result, Utilisateur * user){
     Presence presences[100];
     Referenciel referenciels[100], ref;
     Date dates[100];
-    int choixMenuAdmin, choixMarquerPresence, choixApprenant, choixMenuGF, idApprenant, choixReferenciel;
+    int choixMenuAdmin, choixMarquerPresence, choixApprenant, choixMenuGF, idApprenant, choixReferenciel, ChoiMenuSendMessage;
     int nbrUser = lireFichierUtilisateurs(utilisateurs, "./data/files/utilisateurs.csv");
     int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
     int nbrRef = lireFichierReferentiel(referenciels, "./data/files/referenciel.csv");
@@ -328,10 +390,7 @@ void traitementAdmin(int * result, Utilisateur * user){
 
                     } while (choixMenuGF != 3);
               
-            } while (choixReferenciel != 4);
-            
-            
-          
+            } while (choixReferenciel != 4); 
            
         }
         
@@ -397,6 +456,98 @@ void traitementAdmin(int * result, Utilisateur * user){
         
         if(choixMenuAdmin == 4)
         {
+            do
+            {
+                ChoiMenuSendMessage = menuSendMessage();
+                if (ChoiMenuSendMessage == 1)
+                {   
+                    Message message = excrireMessage();
+                    
+                    envoiMessageAtous(message.sujet, message.texte, "./data/files/messages.csv");
+                    printf("\xE2\x9C\x85 Message envoyé avec succès.......\n");
+                    while ((cl = getchar()) != '\n' && cl != EOF);
+
+                }
+
+                if (ChoiMenuSendMessage == 2)
+                {
+                    do
+                    {
+                       choixReferenciel = menuReferenciel();
+                        if (choixReferenciel == 1 || choixReferenciel == 2 || choixReferenciel == 3)
+                        {
+                            Message message = excrireMessage();
+                    
+                            envoiMessageParClasse(message.sujet, message.texte, choixReferenciel, "./data/files/messages.csv");
+                            printf("\xE2\x9C\x85 Message envoyé avec succès.......\n");
+                            while ((cl = getchar()) != '\n' && cl != EOF);
+                        }
+                        
+
+                    } while (choixReferenciel != 4);
+                    
+                    
+                }
+
+                 if (ChoiMenuSendMessage == 3)
+                { while ((cl = getchar()) != '\n' && cl != EOF);
+                    char input[100];
+                    Apprenant apps[100];
+                    int k=0;
+                    int invalidMat;
+                    
+                    do
+                    {
+                        invalidMat = 0;
+                        menuListeApprenant();
+                        printf("Donner les matricules des apprenant à envoyer des messages\n");
+                        printf("Au format [MATXX0000,MATXX0000] / (Q ou q pour quitter):\n");
+                        fgets(input, sizeof(input), stdin);
+
+                        if (input[0] == 'q' || input[0] == 'Q')
+                        {
+                            break;
+                        }
+                         
+                        char *token = strtok(input, ",");
+                        while (token != NULL) {
+                             
+                            char trimmedMatricule[9];
+                            sscanf(token, " %9s", trimmedMatricule);
+
+                             
+                            if (isValidMatricule(trimmedMatricule)) {
+                                 strcpy(apps[k++].mat, trimmedMatricule);
+                            } else {
+                                printf("Ce matricule n'est pas valide: %s\n", trimmedMatricule);
+                                while ((cl = getchar()) != '\n' && cl != EOF);
+                                invalidMat = 1;
+                            }
+
+                            
+                            
+                            token = strtok(NULL, ",");
+                        }
+
+                        if (invalidMat == 0)
+                        {
+                            Message message = excrireMessage();
+                            envoiMessageParSelection(apps,k,message.sujet,message.texte, "./data/files/messages.csv");
+
+                            printf("\xE2\x9C\x85 Message envoyé avec succès.......\n");
+                            while ((cl = getchar()) != '\n' && cl != EOF);
+                        }
+                        
+                       
+
+                    } while (input[0] != 'q' || input[0] != 'Q');
+                    
+                    
+                }
+                
+                
+            } while (ChoiMenuSendMessage != 4);
+            
             
         }
     } while (choixMenuAdmin != 5);

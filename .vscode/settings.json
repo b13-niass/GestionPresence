@@ -68,6 +68,7 @@
     "string.h": "c",
     "ctype.h": "c",
     "stdlib.h": "c",
-    "onfile.h": "c"
+    "onfile.h": "c",
+    "random": "c"
   }
 }

@@ -14,3 +14,7 @@ extern int testSiDateValide(int annee, int mois, int jour);
 extern int calculNbrJourMois(int mois, int annee);
 extern int saisirIntDate(int min, int max, char msg[],char msgerr[]);
 extern int saisirDate(Date *date, char msg[], char msgerr[]);
+
+extern Message excrireMessage();
+extern void getReferentielName(int idRef, char chaine[]);
+int isValidMatricule(char matricule[]);

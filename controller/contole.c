@@ -199,6 +199,24 @@ void saisiChaine(char chaine[], char msg[],char msgerr[]){
         // printf("%s", chaine);
 }
 
+void saisiMessage(char chaine[], size_t size, char msg[], char msgerr[]) {
+    printf("%s", msg);
+
+    fgets(chaine, size, stdin);
+
+    size_t len = strlen(chaine);
+    if (len > 0 && chaine[len - 1] == '\n') {
+        chaine[len - 1] = '\0';
+    } else {
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+    }
+
+    if (chaine[0] == '\0' || strchr(chaine, ' ') == NULL) {
+        printf("%s", msgerr);
+        saisiChaine(chaine, msg, msgerr);
+    }
+}
 
 void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
             char caractere;
@@ -321,6 +339,55 @@ Date obtenirDateAujourdhui2() {
     d.a = today->tm_year + 1900;
 
     return d;
+}
+
+Message excrireMessage(){
+    Message message;
+    char sujet[50];
+    char texte[150];
+    char cl;
+    while ((cl = getchar()) != '\n' && cl != EOF);
+    saisiMessage(sujet, sizeof(sujet) ,"Le sujet: ", "Ce champ est Obligatoire\n");
+    saisiMessage(texte, sizeof(texte),"Le texte: ", "Ce champ est Obligatoire\n");
+
+    strcpy(message.sujet, sujet);
+    strcpy(message.texte, texte);
+    
+    return message;
+}
+
+void getReferentielName(int idRef, char chaine[]){
+    if (idRef == 1)
+    {
+        strcpy(chaine, "Dev-Web");
+    }
+    if (idRef == 2)
+    {
+        strcpy(chaine, "Ref-Digital");
+    }
+    if (idRef == 3)
+    {
+        strcpy(chaine, "Dev-Data");
+    }
+    
+}
+
+int isValidMatricule(char matricule[]) {
+     
+    size_t len = strlen(matricule);
+    if (len != 9) {
+        return 0;  
+    }
+ 
+    if (!(isalpha(matricule[0]) && isalpha(matricule[1]) &&
+          isalpha(matricule[2]) && isalpha(matricule[3]) &&
+          isalpha(matricule[4]) && isdigit(matricule[5]) &&
+          isdigit(matricule[6]) && isdigit(matricule[7]) &&
+          isdigit(matricule[8]))) {
+        return 0;  
+    }
+
+    return 1;  
 }
 
 // void genererMat(char m[], Apprenant e){

@@ -392,6 +392,126 @@ void genererFichierPresence2(Presence presences[], int nbrPresence,
 }
 
 
+extern void envoiMessageAtous(char sujet[50], char texte[150], char *fichier){
+
+Apprenant apprenants[100];
+  int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
+  int j,m,a,h,mn,s;
+
+  obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
+
+  FILE *fp;
+    
+  fp = fopen(fichier, "a");
+  if (fp == NULL) {
+      printf("Erreur d'ouverture du fichier %s.\n", fichier);
+      return;
+  }
+
+  for (int i = 0; i < nbrApprenant; i++)
+  {
+      fprintf(fp, "%d,%s,%s,%d,%d,%d,%d,%d,%d,%d\n",
+          apprenants[i].id,
+          sujet,
+          texte,
+          j,
+          m,
+          a,
+          h,
+          mn,
+          s,
+          0
+          );
+  }
+
+  // Close the file
+  fclose(fp);
+}
+
+
+extern void envoiMessageParClasse(char sujet[50], char texte[150], int idReferenciel, char *fichier){
+  Apprenant apprenants[100];
+  int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
+  int j,m,a,h,mn,s;
+
+   obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
+
+  FILE *fp;
+    
+  fp = fopen(fichier, "a");
+  if (fp == NULL) {
+      printf("Erreur d'ouverture du fichier %s.\n", fichier);
+      return;
+  }
+
+  for (int i = 0; i < nbrApprenant; i++)
+  {
+    if (apprenants[i].ref.id == idReferenciel)
+    {
+        fprintf(fp, "%d,%s,%s,%d,%d,%d,%d,%d,%d,%d\n",
+          apprenants[i].id,
+          sujet,
+          texte,
+          j,
+          m,
+          a,
+          h,
+          mn,
+          s,
+          0
+          );
+    }
+    
+  }
+
+  // Close the file
+  fclose(fp);
+}
+extern void envoiMessageParSelection(Apprenant apps[], int nbrApp, char sujet[50], char texte[150],  char *fichier){
+  Apprenant apprenants[100];
+  int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
+  int j,m,a,h,mn,s;
+
+  obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
+
+  FILE *fp;
+    
+  fp = fopen(fichier, "a");
+  if (fp == NULL) {
+      printf("Erreur d'ouverture du fichier %s.\n", fichier);
+      return;
+  }
+
+  for (int i = 0; i < nbrApp; i++)
+  {
+    for (int j = 0; j < nbrApprenant; j++)
+    {
+      printf("%d", strcmp(apps[i].mat, apprenants[j].mat));
+       if (!strcmp(apps[i].mat, apprenants[j].mat))
+       {
+           fprintf(fp, "%d,%s,%s,%d,%d,%d,%d,%d,%d,%d\n",
+          apprenants[j].id,
+          sujet,
+          texte,
+          j,
+          m,
+          a,
+          h,
+          mn,
+          s,
+          0
+          );
+       }
+       
+    }
+    
+    }
+
+  // Close the file
+  fclose(fp);
+
+}
+
 // void fichier(){
 //     FILE * file;
 

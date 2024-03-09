@@ -70,6 +70,16 @@ typedef struct{
     Heure heure;
 }Presence; 
 
+typedef struct{
+    // int id;
+    Apprenant apprenant;
+    char sujet[50];
+    char texte[150];
+    Date date_envoi;
+    Heure heure_envoi;
+    int statut;
+} Message;
+
 #define TOTAL_STUDENT 2
 
 #include "./protos/vue.h"
