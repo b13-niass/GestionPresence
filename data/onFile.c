@@ -225,7 +225,44 @@ int lireFichierPresenceDate(Date dates[], char *fichier) {
   return nbrDate;
 }
 
+int lireFichierMessage(Message message[], char *fichier){
+  FILE *fp;
+  char ligne[100];
+  int idApprenant, nbrMessage = 0, statut;
+  char sujet[50], texte[150];
+  int j,m,a,h,mn,s;
+  
+  fp = fopen(fichier, "r");
+  if (fp == NULL) {
+    printf("Erreur d'ouverture du fichier %s.\n", fichier);
+    return -1;
+  }
 
+  while (fgets(ligne, sizeof(ligne), fp)) {
+    sscanf(ligne, "%d,%[^,],%[^,],%d,%d,%d,%d,%d,%d,%d", 
+    &idApprenant, sujet, texte, &j, &m, &a, &h, &mn, &s, &statut);
+
+    
+    message[nbrMessage].apprenant.id = idApprenant;
+    message[nbrMessage].date_envoi.j = j;
+    message[nbrMessage].date_envoi.m = m;
+    message[nbrMessage].date_envoi.a = a;
+    message[nbrMessage].heure_envoi.h = h;
+    message[nbrMessage].heure_envoi.mn = mn;
+    message[nbrMessage].heure_envoi.s = s;
+    strcpy(message[nbrMessage].sujet, sujet);
+    strcpy(message[nbrMessage].texte, texte);
+    message[nbrMessage].statut = statut;
+    nbrMessage++;
+  }
+
+  
+  fclose(fp);
+
+  return nbrMessage;
+
+
+}
 void ajouterPresence(Presence nouvellePresence, char *fichier) {
     FILE *fp;
     

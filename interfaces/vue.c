@@ -82,7 +82,7 @@ int menuAdmin(){
     return choixMenuAdmin;
 }
 
-int menuApprenant(){
+int menuApprenant(int nbrMessagesNonLu){
     int choixMenuApprenant;
     #ifdef _WIN32
     system("cls"); // For Windows
@@ -95,7 +95,7 @@ int menuApprenant(){
         AfficherMenu("Menu Apprenant");
         printf("1 - MARQUER MA PRÉSENCE\n");
         printf("2 - NOMBRE DE MINUTES D’ABSENCE\n");
-        printf("3 - MES MESSAGES (0) \n");
+        printf("3 - MES MESSAGES (%d) \n", nbrMessagesNonLu);
         printf("4 - Déconnexion \n");
 
         printf("Faite un choix: \n");
@@ -110,7 +110,7 @@ int menuApprenant(){
 
     return choixMenuApprenant;
 }
-
+// TODO: FIXME: 
 int menuGenererFichier(){
     int choixMenuGF;
     #ifdef _WIN32
@@ -136,7 +136,8 @@ int menuGenererFichier(){
         
     } while (choixMenuGF <1 || choixMenuGF > 3);
 
-    return choixMenuGF;
+    return choixMenuGF; 
+    
 }
 
 
@@ -313,12 +314,8 @@ void traitementAdmin(int * result, Utilisateur * user){
 
         if (choixMenuAdmin == 2)
         {
-            do
-            {
-                // choixReferenciel = menuReferenciel();
-                // if (choixReferenciel == 1)
-                // {
-                //      do
+           
+                do
                     {
 
                         choixMenuGF = menuGenererFichier();
@@ -389,8 +386,6 @@ void traitementAdmin(int * result, Utilisateur * user){
                         }
 
                     } while (choixMenuGF != 3);
-              
-            } while (choixReferenciel != 4); 
            
         }
         
@@ -404,7 +399,7 @@ void traitementAdmin(int * result, Utilisateur * user){
 
                 if (matricule[0] == 'q' || matricule[0] == 'Q')
                 {
-                    saisiChainePassword(passwordVerify, "Mot de Pass.... :", "\xE2\x9D\x8CMP Obligatoire\n");
+                    saisiChainePassword(passwordVerify, "Mot de Pass.... :", "\n \xE2\x9D\x8CMP Obligatoire\n");
                         // printf("%s", passwordVerify);
                         // printf("%d", strcmp("12345", passwordVerify));
                         if (!strcmp("12345", passwordVerify))
@@ -568,12 +563,14 @@ void traitementApprenant(int * result, Utilisateur * user){
     Apprenant apprenants[100];
     Presence presences[100];
     Referenciel referenciels[100], ref;
-    int choixMenuApprenant, choixMarquerPresence, choixApprenant;
+    Message messages[100];
+    int choixMenuApprenant, choixMarquerPresence, choixApprenant, choixMessage;
     int nbrUser = lireFichierUtilisateurs(utilisateurs, "./data/files/utilisateurs.csv");
     int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");
     int nbrRef = lireFichierReferentiel(referenciels, "./data/files/referenciel.csv");
     int nbrPresence = lireFichierPresence(presences, "./data/files/presence.csv");
-    int j,m,a,h,mn,s;
+    int nbrMessage = lireFichierMessage(messages, "./data/files/messages.csv");
+    int j,m,a,h,mn,s, nbrMessageNonLu = 0;
     Apprenant app;
     char cl;
     obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
@@ -592,11 +589,20 @@ void traitementApprenant(int * result, Utilisateur * user){
         
     }
     
-    printf("%d", app.id);
+    for (int j = 0; j < nbrMessage; j++)
+    {
+        if (app.id == messages[j].apprenant.id && messages[j].statut == 0)
+        {
+            nbrMessageNonLu++;
+        }
+        
+    }
+    
+    // printf("%d", app.id);
 
     do
     {
-        choixMenuApprenant = menuApprenant();
+        choixMenuApprenant = menuApprenant(nbrMessageNonLu);
         if (choixMenuApprenant == 1)
         {
             
@@ -628,13 +634,86 @@ void traitementApprenant(int * result, Utilisateur * user){
         {
             
         }
-    } while (choixMenuApprenant != 5);
+
+        if (choixMenuApprenant == 3)
+        {
+            int numeroMessages = 0;
+            char choixQuitterMess;
+            do
+            {
+            
+                for (int i = nbrMessage - 1; i >= 0; i--)
+                {
+                    // printf("%s", messages[i].su jet);
+                    if(app.id == messages[i].apprenant.id){
+                        // messages[i].statut = 1;
+                        
+                        printf("%d -) %s Le %d/%d/%d à %d:%d:%d  %s\n",++numeroMessages,messages[i].sujet, messages[i].date_envoi.j, 
+                            messages[i].date_envoi.m,messages[i].date_envoi.a, messages[i].heure_envoi.h,
+                            messages[i].heure_envoi.mn, messages[i].heure_envoi.s,
+                            messages[i].statut == 1 ? GREEN"Lu"RESET : RED"Non Lu"RESET
+                        );
+                    }
+                }
+
+                if (numeroMessages == 0)
+                {
+                    printf("Vous n'avez pas de messages\n");
+                }else{
+                    int lire;
+                    printf("choisir le messages à lire:");
+                    scanf("%d",&lire);
+
+                    if (lire <=0 || lire > numeroMessages)
+                    {
+                        printf("Choix invalide\n");
+                        while ((cl = getchar()) != '\n' && cl != EOF);
+                    }else{
+                        lire--;
+                        for (int i = nbrMessage - 1; i >= 0; i--)
+                        {   
+                            if(app.id == messages[i].apprenant.id){
+                                
+                                if (lire == 0)
+                                {
+                                    // if (messages[i].statut == 0)
+                                    // {
+                                        
+                                    // }
+                                    
+                                    printf("Sujet: %s \n", messages[i].sujet);
+                                    printf("Texte: %s \n", messages[i].texte);
+                                    break;
+                                }
+                                lire--;
+                            }
+                        }
+                        numeroMessages = 0;
+                        while ((cl = getchar()) != '\n' && cl != EOF);
+                        getchar();
+
+                    }
+                        
+                }
+                printf("voulez-vous quitter ? O(o) ou N(n) : "); 
+                choixQuitterMess =  getchar();
+
+                if (choixQuitterMess == 'O' || choixQuitterMess == 'o')
+                {
+                    break;
+                }
+                
+                
+            } while (choixQuitterMess != 'O' || choixQuitterMess != 'o');
+            
+        }
+    } while (choixMenuApprenant != 4);
     #ifdef _WIN32
     system("cls"); // For Windows
     #else
         system("clear"); // For Unix-like systems
     #endif
-    if (choixMenuApprenant == 5)
+    if (choixMenuApprenant == 4)
     {
         *result = 0;
     }
@@ -685,6 +764,7 @@ int vueLogin(){
         if (u.type == 2)
         {
             traitementApprenant(&resultConnexionApp, &u);
+             while ((cl = getchar()) != '\n' && cl != EOF);
         }
         log[0] = '\0';
         pass[0] = '\0';      
