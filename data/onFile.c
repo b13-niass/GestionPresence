@@ -263,6 +263,46 @@ int lireFichierMessage(Message message[], char *fichier){
 
 
 }
+
+void marquerMessageLu(int idApp, int numero, char *fichier){
+    FILE *file = fopen(fichier, "r+");
+    if (file == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return;
+    }
+
+    fseek(file, 0, SEEK_SET);
+
+    char line[100];  
+    int currentRow =0;
+    while (fgets(line, sizeof(line), file) != NULL) {
+        currentRow++;
+
+        if (currentRow == numero) {
+            char *token = strtok(line, ",");
+            int currentColumn = 0;
+
+            while (token != NULL) {
+                currentColumn++;
+
+                if (currentColumn == 10) {
+                    fseek(file, -strlen(token), SEEK_CUR); 
+                    fputs("1",file); 
+                    break;
+                }
+
+                token = strtok(NULL, ",");
+            }
+
+            fseek(file, 0, SEEK_CUR);
+        }
+    }
+
+    fclose(file);
+
+
+}
+
 void ajouterPresence(Presence nouvellePresence, char *fichier) {
     FILE *fp;
     

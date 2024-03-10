@@ -573,6 +573,7 @@ void traitementApprenant(int * result, Utilisateur * user){
     int j,m,a,h,mn,s, nbrMessageNonLu = 0;
     Apprenant app;
     char cl;
+    int positionM[100], valPosition=0, indiceP = 0;
     obtenirDateAujourdhui(&j,&m,&a,&h,&mn,&s);
 
     for (int i = 0; i < nbrApprenant; i++)
@@ -645,9 +646,10 @@ void traitementApprenant(int * result, Utilisateur * user){
                 for (int i = nbrMessage - 1; i >= 0; i--)
                 {
                     // printf("%s", messages[i].su jet);
+                    valPosition++;
                     if(app.id == messages[i].apprenant.id){
                         // messages[i].statut = 1;
-                        
+                        positionM[indiceP++] = valPosition;
                         printf("%d -) %s Le %d/%d/%d à %d:%d:%d  %s\n",++numeroMessages,messages[i].sujet, messages[i].date_envoi.j, 
                             messages[i].date_envoi.m,messages[i].date_envoi.a, messages[i].heure_envoi.h,
                             messages[i].heure_envoi.mn, messages[i].heure_envoi.s,
@@ -655,7 +657,8 @@ void traitementApprenant(int * result, Utilisateur * user){
                         );
                     }
                 }
-
+               
+               valPosition = 0; indiceP=0;
                 if (numeroMessages == 0)
                 {
                     printf("Vous n'avez pas de messages\n");
@@ -669,6 +672,8 @@ void traitementApprenant(int * result, Utilisateur * user){
                         printf("Choix invalide\n");
                         while ((cl = getchar()) != '\n' && cl != EOF);
                     }else{
+                    
+                        marquerMessageLu(app.id, nbrMessage - positionM[lire-1]+1, "./data/files/messages.csv");
                         lire--;
                         for (int i = nbrMessage - 1; i >= 0; i--)
                         {   
@@ -688,12 +693,21 @@ void traitementApprenant(int * result, Utilisateur * user){
                                 lire--;
                             }
                         }
-                        numeroMessages = 0;
+                        numeroMessages = 0, lire = 0;
                         while ((cl = getchar()) != '\n' && cl != EOF);
                         getchar();
 
                     }
+                  nbrMessage = lireFichierMessage(messages, "./data/files/messages.csv"); 
+                  nbrMessageNonLu = 0;
+                  for (int j = 0; j < nbrMessage; j++)
+                    {
+                        if (app.id == messages[j].apprenant.id && messages[j].statut == 0)
+                        {
+                            nbrMessageNonLu++;
+                        }
                         
+                    }     
                 }
                 printf("voulez-vous quitter ? O(o) ou N(n) : "); 
                 choixQuitterMess =  getchar();

@@ -10,7 +10,7 @@ extern int lireFichierMessage(Message message[], char *fichier);
 
 extern void ajouterPresence(Presence nouvellePresence, char *fichier);
 
-extern void marquerMessageLu(Apprenant app, char *fichier);
+extern void marquerMessageLu(int idApp, int numero, char *fichier);
 
 extern void genererFichierPresence(Presence presences[], int nbrPresence, 
   Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date,Date dates[], int nbrDate, char *fichier);
