@@ -39,6 +39,31 @@ int lireFichierUtilisateurs(Utilisateur utilisateurs[], char *fichier) {
   return nbUtilisateurs;
 }
 
+int lireFichierQuota(Quota quota[], char *fichier) {
+  FILE *fp;
+  char ligne[100];
+  int valeur;
+  int nbUtilisateurs = 0;
+
+  fp = fopen(fichier, "r");
+  if (fp == NULL) {
+    printf("Erreur d'ouverture du fichier %s.\n", fichier);
+    return -1;
+  }
+
+  while (fgets(ligne, sizeof(ligne), fp)) {
+    sscanf(ligne, "%d", 
+    &valeur);
+     quota[nbUtilisateurs].valeur = valeur;
+  }
+
+  // Fermeture du fichier
+  fclose(fp);
+
+  return 1;
+}
+
+
 int lireFichierAdmin(Admin admins[], char *fichier) {
   FILE *fp;
   char ligne[100];
@@ -345,9 +370,9 @@ for (int indate = 0; indate < nbrDate; indate++)
 
     fprintf(fp, "%s", dateChaine);
 
-    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
-    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel     | Date Naissance   | Statut |\n");
-    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+-----------------------+\n");
+    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel     | Date Naissance   | Statut                |\n");
+    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+-----------------------+\n");
 
     for (int i = 0; i < nbrApp; i++)
     {
@@ -355,8 +380,10 @@ for (int indate = 0; indate < nbrDate; indate++)
         {
          
            if (apprenants[i].u.id == users[j].id)
-           {  
-              if (verifierPresenceParDate(apprenants[i].id,presences,nbrPresence, dates[indate]))
+           { 
+            Heure heu;
+            char etat_presence[50];
+              if (verifierPresenceParDategetHeure(apprenants[i].id,presences,nbrPresence, dates[indate], &heu))
               {
                  if (apprenants[i].ref.id == 1)
                 {
@@ -373,17 +400,31 @@ for (int indate = 0; indate < nbrDate; indate++)
                   strcpy(ref, refs[2].libelle);
                 }
 
-                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d-%-3d-%-3d | %-6s |\n", 
-                      apprenants[i].mat,
-                      users[j].prenom,
-                      users[j].nom,
-                      ref,
-                      users[j].date_naiss.j,
-                      users[j].date_naiss.m,
-                      users[j].date_naiss.a,
-                      "Présent");
+                if (heu.h >= 8 && heu.mn >= 16 )
+                {
+                  strcpy(etat_presence, "Présent(en retard)");
+
+                }else if (heu.h == 8 && heu.mn < 16 )
+                {
+                  strcpy(etat_presence, "Présent");
+
+                }else if (heu.h < 8 || heu.h >= 16 )
+                {
+                  strcpy(etat_presence, "Absent");
+                }
+
+                sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d-%-3d-%-3d     | %-6s                |\n", 
+                    apprenants[i].mat,
+                    users[j].prenom,
+                    users[j].nom,
+                    ref,
+                    users[j].date_naiss.j,
+                    users[j].date_naiss.m,
+                    users[j].date_naiss.a,
+                    etat_presence
+                    );
                   fputs(ligne, fp);
-                  fprintf(fp, "+--------------+----------------+---------------+-----------------+----------------+--------+\n");
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+----------------+-------------------------+\n");
                 // }
               }
            }
@@ -412,9 +453,12 @@ void genererFichierPresence2(Presence presences[], int nbrPresence,
         return;
     }
 
-    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
-    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel     | Date Naissance   | Statut |\n");
-    fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+    fprintf(fp, "La liste de présence:\n");
+
+
+    fprintf(fp, "\n+--------------+----------------+---------------+----------------+-----+-----+---------+\n");
+    fprintf(fp, "  | Matricule    | Prenom         | Nom           | Referentiel    | Date Naissance      |\n");
+    fprintf(fp, "  +--------------+----------------+---------------+----------------+-----+-----+--------+\n");
 
     for (int i = 0; i < nbrApp; i++)
     {
@@ -422,8 +466,163 @@ void genererFichierPresence2(Presence presences[], int nbrPresence,
         {
          
            if (apprenants[i].u.id == users[j].id)
-           {  
-              if (verifierPresenceParDate(apprenants[i].id,presences,nbrPresence, date))
+           {   Heure heu;
+               char etat_presence[50];
+              if (verifierPresenceParDategetHeure(apprenants[i].id,presences,nbrPresence, date, &heu))
+              {
+
+                 if (apprenants[i].ref.id == 1)
+                {
+                  strcpy(ref, refs[0].libelle);
+                }
+
+                if (apprenants[i].ref.id == 2)
+                {
+                  strcpy(ref, refs[1].libelle);
+                }
+
+                 if (apprenants[i].ref.id == 3)
+                {
+                  strcpy(ref, refs[2].libelle);
+                }
+
+                 if (heu.h >= 8 && heu.mn >= 16 )
+                {
+                  strcpy(etat_presence, "Présent(en retard)");
+
+                }else if (heu.h == 8 && heu.mn < 16 )
+                {
+                  strcpy(etat_presence, "Présent");
+
+                }else if (heu.h < 8 || heu.h >= 16 )
+                {
+                  strcpy(etat_presence, "Absent");
+                }
+
+                //  if (apprenants[i].ref.id == refs[idRef-1].id)
+                // {
+                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d - %-3d- %-3d |\n", 
+                      apprenants[i].mat,
+                      users[j].prenom,
+                      users[j].nom,
+                      ref,
+                      users[j].date_naiss.j,
+                      users[j].date_naiss.m,
+                      users[j].date_naiss.a);
+                  fputs(ligne, fp);
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+\n");
+                // }
+              }
+           }
+           
+        }
+    }
+    
+    fclose(fp);
+
+    printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
+
+
+
+}
+
+void genererListeAbsenceParDate(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier){
+    char ligne[500],ref[50];
+    FILE *fp;
+    
+    fp = fopen(fichier, "w");
+    if (fp == NULL) {
+        printf("Erreur d'ouverture du fichier %s.\n", fichier);
+        return;
+    }
+
+    fprintf(fp, "La liste de absence:\n");
+
+
+    fprintf(fp, "\n+--------------+----------------+---------------+----------------+-----+-----+---------+\n");
+    fprintf(fp, "  | Matricule    | Prenom         | Nom           | Referentiel    | Date Naissance      |\n");
+    fprintf(fp, "  +--------------+----------------+---------------+----------------+-----+-----+--------+\n");
+
+    for (int i = 0; i < nbrApp; i++)
+    {
+        for (int j = 0; j < nbrUser; j++)
+        {
+         
+           if (apprenants[i].u.id == users[j].id)
+           {   Heure heu;
+               char etat_presence[50];
+              if (verifierAbsenceParDate(apprenants[i].id,presences,nbrPresence, date))
+              {
+
+                 if (apprenants[i].ref.id == 1)
+                {
+                  strcpy(ref, refs[0].libelle);
+                }
+
+                if (apprenants[i].ref.id == 2)
+                {
+                  strcpy(ref, refs[1].libelle);
+                }
+
+                 if (apprenants[i].ref.id == 3)
+                {
+                  strcpy(ref, refs[2].libelle);
+                }
+                //  if (apprenants[i].ref.id == refs[idRef-1].id)
+                // {
+                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d - %-3d- %-3d |\n", 
+                      apprenants[i].mat,
+                      users[j].prenom,
+                      users[j].nom,
+                      ref,
+                      users[j].date_naiss.j,
+                      users[j].date_naiss.m,
+                      users[j].date_naiss.a);
+                  fputs(ligne, fp);
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+\n");
+                // }
+              }
+           }
+           
+        }
+    }
+    
+    fclose(fp);
+
+    printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
+
+
+  }
+
+void genererListeRetardParDate(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier) {
+    char ligne[500],ref[50];
+    FILE *fp;
+    
+    fp = fopen(fichier, "w");
+    if (fp == NULL) {
+        printf("Erreur d'ouverture du fichier %s.\n", fichier);
+        return;
+    }
+
+    fprintf(fp, "La liste de retard:\n");
+
+
+    fprintf(fp, "+--------------+----------------+---------------+----------------+-----+-----+---------+--------------------+\n");
+    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel    | Date Naissance      | Minute Retard      |\n");
+    fprintf(fp, "+--------------+----------------+---------------+----------------+-----+-----+---------+--------------------+\n");
+
+    for (int i = 0; i < nbrApp; i++)
+    {
+        for (int j = 0; j < nbrUser; j++)
+        {
+         
+           if (apprenants[i].u.id == users[j].id)
+           {   Heure heu;
+               char etat_presence[50];
+               int nbMinuteRetard;
+              if (verifierRetardParDate(apprenants[i].id,presences,nbrPresence, date, &nbMinuteRetard))
               {
 
                  if (apprenants[i].ref.id == 1)
@@ -444,7 +643,7 @@ void genererFichierPresence2(Presence presences[], int nbrPresence,
 
                 //  if (apprenants[i].ref.id == refs[idRef-1].id)
                 // {
-                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-3d-%-3d-%-3d | %-6s |\n", 
+                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-5d - %-5d- %-5d | %-15d\n", 
                       apprenants[i].mat,
                       users[j].prenom,
                       users[j].nom,
@@ -452,9 +651,10 @@ void genererFichierPresence2(Presence presences[], int nbrPresence,
                       users[j].date_naiss.j,
                       users[j].date_naiss.m,
                       users[j].date_naiss.a,
-                      "Présent");
+                      nbMinuteRetard 
+                      );
                   fputs(ligne, fp);
-                  fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------+\n");
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------------------+\n");
                 // }
               }
            }
@@ -466,10 +666,161 @@ void genererFichierPresence2(Presence presences[], int nbrPresence,
 
     printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
 
-}
+
+  }
+
+void genererListeRetardParMois(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier){
+     char ligne[500],ref[50];
+    FILE *fp;
+    
+    fp = fopen(fichier, "w");
+    if (fp == NULL) {
+        printf("Erreur d'ouverture du fichier %s.\n", fichier);
+        return;
+    }
+
+    fprintf(fp, "La liste de retard du mois %d de %d:\n", date.m, date.a);
 
 
-extern void envoiMessageAtous(char sujet[50], char texte[150], char *fichier){
+    fprintf(fp, "+--------------+----------------+---------------+----------------+-----+-----+---------+--------------------+\n");
+    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel    | Date Naissance      | Minute Retard      |\n");
+    fprintf(fp, "+--------------+----------------+---------------+----------------+-----+-----+---------+--------------------+\n");
+
+    for (int i = 0; i < nbrApp; i++)
+    {
+        for (int j = 0; j < nbrUser; j++)
+        {
+         
+           if (apprenants[i].u.id == users[j].id)
+           {   Heure heu;
+               char etat_presence[50];
+               int nbMinuteRetard = 0;
+              if (verifierRetardParMois(apprenants[i].id,presences,nbrPresence, date, &nbMinuteRetard))
+              {
+
+                 if (apprenants[i].ref.id == 1)
+                {
+                  strcpy(ref, refs[0].libelle);
+                }
+
+                if (apprenants[i].ref.id == 2)
+                {
+                  strcpy(ref, refs[1].libelle);
+                }
+
+                 if (apprenants[i].ref.id == 3)
+                {
+                  strcpy(ref, refs[2].libelle);
+                }
+
+
+                //  if (apprenants[i].ref.id == refs[idRef-1].id)
+                // {
+                  sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-5d - %-5d- %-5d | %-15d\n", 
+                      apprenants[i].mat,
+                      users[j].prenom,
+                      users[j].nom,
+                      ref,
+                      users[j].date_naiss.j,
+                      users[j].date_naiss.m,
+                      users[j].date_naiss.a,
+                      nbMinuteRetard 
+                      );
+                  fputs(ligne, fp);
+                  fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------------------+\n");
+                // }
+              }
+           }
+           
+        }
+    }
+    
+    fclose(fp);
+
+    printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
+  }
+
+void genererListeApprenantRenvoyer(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, char *fichier){
+    char ligne[500],ref[50];
+    FILE *fp;
+    Date date2 = obtenirDateAujourdhui2();
+    Quota quotas[1];
+    int nbrQuota = lireFichierQuota(quotas, "./data/files/quota.csv");
+
+    fp = fopen(fichier, "w");
+    if (fp == NULL) {
+        printf("Erreur d'ouverture du fichier %s.\n", fichier);
+        return;
+    }
+
+    fprintf(fp, "La liste d'apprenant à renvoyer ce mois ci :\n");
+
+    fprintf(fp, "+--------------+----------------+---------------+----------------+-----+-----+---------+--------------------+\n");
+    fprintf(fp, "| Matricule    | Prenom         | Nom           | Referentiel    | Date Naissance      | Minute Retard      |\n");
+    fprintf(fp, "+--------------+----------------+---------------+----------------+-----+-----+---------+--------------------+\n");
+
+    for (int i = 0; i < nbrApp; i++)
+    {
+        for (int j = 0; j < nbrUser; j++)
+        {
+         
+           if (apprenants[i].u.id == users[j].id)
+          {   Heure heu;
+              char etat_presence[50];
+              int nbMinuteRetard = 0;
+              if (verifierRetardParMois(apprenants[i].id,presences,nbrPresence, date2, &nbMinuteRetard))
+              {
+                if (nbMinuteRetard >= quotas[0].valeur)
+                {
+                 
+                   if (apprenants[i].ref.id == 1)
+                {
+                  strcpy(ref, refs[0].libelle);
+                }
+
+                if (apprenants[i].ref.id == 2)
+                {
+                  strcpy(ref, refs[1].libelle);
+                }
+
+                 if (apprenants[i].ref.id == 3)
+                {
+                  strcpy(ref, refs[2].libelle);
+                }
+
+
+                sprintf(ligne, "| %-12s | %-14s | %-13s | %-15s | %-5d - %-5d- %-5d | %-15d\n", 
+                    apprenants[i].mat,
+                    users[j].prenom,
+                    users[j].nom,
+                    ref,
+                    users[j].date_naiss.j,
+                    users[j].date_naiss.m,
+                    users[j].date_naiss.a,
+                    nbMinuteRetard 
+                    );
+                fputs(ligne, fp);
+                fprintf(fp, "+--------------+----------------+---------------+-----------------+-----+-----+------+--------------------+\n");
+
+
+                }
+                
+              }
+           }
+           
+        }
+    }
+    
+    fclose(fp);
+
+    printf("\xE2\x9C\x85 Fichier %s généré avec succès.......\n", fichier);
+
+  }
+
+
+void envoiMessageAtous(char sujet[50], char texte[150], char *fichier){
 
 Apprenant apprenants[100];
   int nbrApprenant = lireFichierAprennant(apprenants, "./data/files/apprenant.csv");

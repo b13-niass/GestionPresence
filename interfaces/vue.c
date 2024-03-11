@@ -29,6 +29,104 @@ int verifierPresenceParDate(int idApprenant, Presence presences[], int nbrPresen
     return 0;
 }
 
+int verifierAbsenceParDate(int idApprenant, Presence presences[], int nbrPresence, Date date){
+
+    for (int i = 0; i < nbrPresence; i++)
+    {
+        if (presences[i].apprenant.id == idApprenant && date.j == presences[i].datePresence.j && date.m == presences[i].datePresence.m
+        && presences[i].datePresence.a == date.a)
+        {
+            return 0;
+        }
+        
+    }
+    return 1;
+}
+
+int verifierRetardParDate(int idApprenant, Presence presences[], int nbrPresence, Date date, int * nbMinuteRetard){
+    int heureRetard;
+    for (int i = 0; i < nbrPresence; i++)
+    {
+        if (presences[i].apprenant.id == idApprenant && date.j == presences[i].datePresence.j && date.m == presences[i].datePresence.m
+        && presences[i].datePresence.a == date.a)
+        {
+            if (presences[i].heure.h >= 8 && presences[i].heure.mn >= 16)
+            {
+                if (presences[i].heure.h <= 16)
+                {   
+                    heureRetard = presences[i].heure.h - 8;
+                    if (heureRetard == 0)
+                    {
+                        *nbMinuteRetard =  presences[i].heure.mn - 16;
+                    }else{
+                        *nbMinuteRetard = (heureRetard * 60) + presences[i].heure.mn;
+                    }
+                    
+                     return 1;
+                }
+                
+            }
+        
+        }
+        
+    }
+    return 0;
+}
+
+int verifierRetardParMois(int idApprenant, Presence presences[], int nbrPresence, Date date, int * nbMinuteRetard){
+    int heureRetard;
+    int cpt = 0;
+    for (int i = 0; i < nbrPresence; i++)
+    {
+        if (presences[i].apprenant.id == idApprenant && date.m == presences[i].datePresence.m
+        && presences[i].datePresence.a == date.a)
+        {
+            if (presences[i].heure.h >= 8 && presences[i].heure.mn >= 16)
+            {
+                if (presences[i].heure.h <= 16)
+                {   
+                    heureRetard = presences[i].heure.h - 8;
+                    if (heureRetard == 0)
+                    {
+                        *nbMinuteRetard +=  presences[i].heure.mn - 16;
+                    }else{
+                        *nbMinuteRetard += (heureRetard * 60) + presences[i].heure.mn;
+                    }
+                    
+                     cpt = 1;
+                }
+                
+            }
+        
+        }
+        
+    }
+    if (cpt == 1)
+    {
+        return 1;
+    }
+    
+    return 0;
+}
+
+
+int verifierPresenceParDategetHeure(int idApprenant, Presence presences[], int nbrPresence, Date date, Heure * heure){
+    Heure get_heure;
+    for (int i = 0; i < nbrPresence; i++)
+    {
+        if (presences[i].apprenant.id == idApprenant && date.j == presences[i].datePresence.j && date.m == presences[i].datePresence.m
+        && presences[i].datePresence.a == date.a)
+        {   
+            get_heure.h = presences[i].heure.h;
+            get_heure.mn = presences[i].heure.mn;
+            get_heure.s = presences[i].heure.s;
+            *heure = get_heure;
+            return 1;
+        }
+        
+    }
+    return 0;
+}
 
 Heure heurePresence(int idApprenant, Presence presences[], int nbrPresence){
     Heure heu;
@@ -110,6 +208,8 @@ int menuApprenant(int nbrMessagesNonLu){
 
     return choixMenuApprenant;
 }
+
+
 // TODO: FIXME: 
 int menuGenererFichier(){
     int choixMenuGF;
@@ -121,20 +221,22 @@ int menuGenererFichier(){
 
     do
     {
-        AfficherMenu("Generer Fichier Presence");
+        AfficherMenu("Generer Fichier retards, présences et absences");
         printf("1 - Toutes les dates\n");
         printf("2 - À une date\n");
-        printf("3 - Quitter \n");
+        printf("3 - Cumule de retard Par mois\n");
+        printf("4 - À renvoyer ce mois \n");
+        printf("5 - Quitter \n");
 
         printf("Faite un choix: \n");
         scanf("%d", &choixMenuGF);
 
-        if (choixMenuGF < 1 || choixMenuGF > 3)
+        if (choixMenuGF < 1 || choixMenuGF > 5)
         {
-            printf("Faite un choix entre 1, 2 et 3\n");
+            printf("Faite un choix entre 1, 2 ,3, 4 et 5\n");
         }
         
-    } while (choixMenuGF <1 || choixMenuGF > 3);
+    } while (choixMenuGF <1 || choixMenuGF > 5);
 
     return choixMenuGF; 
     
@@ -338,6 +440,7 @@ void traitementAdmin(int * result, Utilisateur * user){
                                 genererFichierPresence(presences, nbrPresence, 
                                     apprenants, nbrApprenant , utilisateurs, nbrUser,
                                     referenciels, nbrRef, choixReferenciel, d, dates, nbrDate, nomFichier);
+                                    
                                     // pause();
                                     sleep(2);
                                     continue;
@@ -357,17 +460,35 @@ void traitementAdmin(int * result, Utilisateur * user){
                                     Heure h = obtenirHeure();
                                     char dateHeureStr[50];
                                     char nomFichier [150];
+                                    char nomFichier1 [150];
+                                    char nomFichier2 [150];
 
-                                    sprintf(dateHeureStr, "%04d%02d%02d_%02d%02d%02d",
-                                    d.a, d.m, d.j, h.h, h.mn, h.s);
+                                    // sprintf(dateHeureStr, "%04d%02d%02d_%02d%02d%02d",
+                                    // d.a, d.m, d.j, h.h, h.mn, h.s);
 
-                                    sprintf(nomFichier, "./data/files/fichier_presence_date.csv");
+                                    sprintf(dateHeureStr, "%04d%02d%02d",
+                                    d.a, d.m, d.j);
+                                    
+                                    sprintf(nomFichier, "./data/files/fichier_presence_date_%s.csv", dateHeureStr);
+                                    sprintf(nomFichier1, "./data/files/fichier_absence_date_%s.csv", dateHeureStr);
+                                    sprintf(nomFichier2, "./data/files/fichier_retard_date_%s.csv", dateHeureStr);
+
+                                    // sprintf(nomFichier, "./data/files/fichier_presence_date.csv");
+                                    
                                  
                                     
                                     genererFichierPresence2(presences, nbrPresence, 
                                         apprenants, nbrApprenant , utilisateurs, nbrUser,
                                         referenciels, nbrRef, choixReferenciel, d, nomFichier);
-                                    
+
+                                     genererListeAbsenceParDate(presences, nbrPresence, 
+                                        apprenants, nbrApprenant , utilisateurs, nbrUser,
+                                        referenciels, nbrRef, choixReferenciel, d, nomFichier1);
+
+                                    genererListeRetardParDate(presences, nbrPresence, 
+                                    apprenants, nbrApprenant , utilisateurs, nbrUser,
+                                    referenciels, nbrRef, choixReferenciel, d, nomFichier2);
+
                                     sleep(2);
                                     continue;
                                         
@@ -385,7 +506,59 @@ void traitementAdmin(int * result, Utilisateur * user){
 
                         }
 
-                    } while (choixMenuGF != 3);
+
+                        if (choixMenuGF == 3){
+                            int mois, annee;
+                            int j1,m1,a1,h1,mn1,s1;
+                            char choixGR;
+                            obtenirDateAujourdhui(&j1,&m1,&a1,&h1,&mn1,&s1);
+                            do
+                            {
+                                annee = saisirIntDate(1,a1,"Indiquer l'année", "l'année une année inférieur ou égale à cette \n");
+                                mois = saisirIntDate(1,12,"Indiquer le mois ", "Indiquer un mois inférieur ou égale à ce mois\n");
+                            
+                                Heure h = obtenirHeure();
+                                Date dateSaisie;
+                                dateSaisie.a = annee;
+                                dateSaisie.m = mois;
+                                char dateHeureStr[50];
+                                char nomFichier [150];
+                                sprintf(dateHeureStr, "%04d%02d",
+                                    dateSaisie.a, dateSaisie.m);
+                                    
+                                sprintf(nomFichier, "./data/files/fichier_cumule_retard_mois_%s.csv", dateHeureStr);
+                                genererListeRetardParMois(presences, nbrPresence, 
+                                apprenants, nbrApprenant , utilisateurs, nbrUser,
+                                referenciels, nbrRef, choixReferenciel, dateSaisie, nomFichier);
+
+                                sleep(2);
+                                continue;
+
+                                printf("Voulez-vous resaisir ? O(o) ou N(n):");
+                                scanf("%c", &choixGR);
+                                
+                                if (choixGR == 'n' || choixGR == 'N')
+                                {
+                                    break;
+                                }
+                                 
+                            } while (choixGR == 'n' || choixGR == 'N');
+                            
+                        }
+
+                        if (choixMenuGF == 4){
+                            char nomFichier [150];
+                            char dateHeureStr[50];
+                            Date date3 = obtenirDateAujourdhui2();
+                            sprintf(dateHeureStr, "%04d%02d",
+                                date3.a, date3.m);
+                                    
+                            sprintf(nomFichier, "./data/files/fichier_liste_renvoi_mois_%s.csv", dateHeureStr);
+                            genererListeApprenantRenvoyer(presences, nbrPresence, 
+                                    apprenants, nbrApprenant , utilisateurs, nbrUser,
+                                    referenciels, nbrRef, choixReferenciel, nomFichier);
+                        }
+                    } while (choixMenuGF != 5);
            
         }
         

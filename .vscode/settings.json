@@ -38,10 +38,7 @@
   "C_Cpp_Runner.compilerArgs": [],
   "C_Cpp_Runner.linkerArgs": [],
   "C_Cpp_Runner.includePaths": [],
-  "C_Cpp_Runner.includeSearch": [
-    "*",
-    "**/*"
-  ],
+  "C_Cpp_Runner.includeSearch": ["*", "**/*"],
   "C_Cpp_Runner.excludeSearch": [
     "**/build",
     "**/build/**",
@@ -69,6 +66,7 @@
     "ctype.h": "c",
     "stdlib.h": "c",
     "onfile.h": "c",
-    "random": "c"
+    "random": "c",
+    "vue.h": "c"
   }
 }

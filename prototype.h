@@ -80,6 +80,10 @@ typedef struct{
     int statut;
 } Message;
 
+typedef struct{
+    int valeur;
+}Quota; 
+
 #define TOTAL_STUDENT 2
 
 #include "./protos/vue.h"

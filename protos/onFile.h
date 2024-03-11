@@ -22,7 +22,17 @@ extern void envoiMessageAtous(char sujet[50], char texte[150], char *fichier);
 extern void envoiMessageParClasse(char sujet[50], char texte[150], int idReferenciel, char *fichier);
 extern void envoiMessageParSelection(Apprenant apprenants[], int nbrApprenant, char sujet[50], char texte[150],  char *fichier);
 
+extern void genererListeAbsenceParDate(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier);
+extern void genererListeRetardParDate(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier);
 
+extern void genererListeRetardParMois(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, Date date, char *fichier);
+
+void genererListeApprenantRenvoyer(Presence presences[], int nbrPresence, 
+  Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, char *fichier);
+  
 // extern Utilisateur login(char login[],char pass[]);
 
 // void fichier();
