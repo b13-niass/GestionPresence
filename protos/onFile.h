@@ -32,7 +32,12 @@ extern void genererListeRetardParMois(Presence presences[], int nbrPresence,
 
 void genererListeApprenantRenvoyer(Presence presences[], int nbrPresence, 
   Apprenant apprenants[], int nbrApp, Utilisateur users[], int nbrUser, Referenciel refs[], int nbrRef,int idRef, char *fichier);
-  
+
+extern void changerQuota(char quota[],char *fichier);
+extern void changerHeureDebFinCours(Heure h1, Heure h2, char *fichier);
+
+extern void lireFichierHeureDebFin(Heure * hdeb, Heure * hfin, char *fichier);
+
 // extern Utilisateur login(char login[],char pass[]);
 
 // void fichier();

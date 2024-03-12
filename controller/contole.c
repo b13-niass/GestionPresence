@@ -165,6 +165,62 @@ int saisirDate(Date *date, char msg[], char msgerr[]) {
     return 1;  // Succès
 }
 
+
+void saisirMoisAnnee(Date *date, char msg[], char msgerr[]) {
+    char input[20];  // ajustez la taille selon vos besoins
+    time_t t = time(NULL);
+    struct tm *today = localtime(&t);
+
+    do {
+        printf("Entrez le mois et l'annee (format : mois/annee) : ");
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            printf("Erreur de lecture.\n");
+            // return -1;
+        }
+
+        size_t length = strlen(input);
+        if (length > 0 && input[length - 1] == '\n') {
+            input[length - 1] = '\0';
+        }
+
+        if (sscanf(input, "%d/%d", &date->m, &date->a) != 2
+        || (date->m > today->tm_mon + 1 && date->a == today->tm_year + 1900) ||  date->a > today->tm_year + 1900) {
+            printf("Date invalide. Veuillez réessayer.\n");
+        } 
+        // (date->j > today->tm_mday && date->m > today->tm_mon + 1 && date->a > today->tm_year + 1900)
+    } while (sscanf(input, "%d/%d", &date->m, &date->a) != 2 || (date->m > today->tm_mon + 1 && date->a == today->tm_year + 1900) ||  date->a > today->tm_year + 1900);
+
+    // return 1;  // Succès
+}
+
+int saisirHeureMinute(Heure *heure, char msg[], char msgerr[]) {
+    char input[20];  // ajustez la taille selon vos besoins
+    time_t t = time(NULL);
+    struct tm *today = localtime(&t);
+
+    do {
+        printf("%s (format : heure-minute) : ", msg);
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            printf("Erreur de lecture.\n");
+            return -1;
+        }
+
+        size_t length = strlen(input);
+        if (length > 0 && input[length - 1] == '\n') {
+            input[length - 1] = '\0';
+        }
+
+        if (sscanf(input, "%d-%d", &heure->h, &heure->mn) != 2
+        || heure->h > 23 || heure->h < 0 || heure->mn > 59 || heure->mn < 0) {
+            printf("Date invalide. Veuillez réessayer.\n");
+            // sa
+        }
+        // (date->j > today->tm_mday && date->m > today->tm_mon + 1 && date->a > today->tm_year + 1900)
+    } while (sscanf(input, "%d-%d", &heure->h, &heure->mn) != 2 || heure->h > 23 || heure->h < 0 || heure->mn > 59 || heure->mn < 0);
+
+    return 1;  // Succès
+}
+
 void saisiChaine(char chaine[], char msg[],char msgerr[]){
             char caractere;
             int i = 0, j = 0, nbrEspace = 0;
@@ -205,6 +261,7 @@ void saisiMessage(char chaine[], size_t size, char msg[], char msgerr[]) {
     fgets(chaine, size, stdin);
 
     size_t len = strlen(chaine);
+    printf("%c", chaine[len - 1]);
     if (len > 0 && chaine[len - 1] == '\n') {
         chaine[len - 1] = '\0';
     } else {
@@ -212,7 +269,7 @@ void saisiMessage(char chaine[], size_t size, char msg[], char msgerr[]) {
         while ((c = getchar()) != '\n' && c != EOF);
     }
 
-    if (chaine[0] == '\0' || strchr(chaine, ' ') == NULL) {
+    if (chaine[0] == '\0') {
         printf("%s", msgerr);
         saisiChaine(chaine, msg, msgerr);
     }
@@ -222,21 +279,96 @@ void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
             char caractere;
             struct termios oldt, newt;
             int i = 0, j = 0, nbrEspace = 0;
+            while(1){
+                tcgetattr(STDIN_FILENO, &oldt);
+                newt = oldt;
+                newt.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL | ICANON);
+                tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+                
+                printf ("%s ", msg);
+                caractere = getchar();
+                putchar('*');
+                while (caractere != '\n')
+                {
+                    if (caractere == ' ')
+                    {
+                        nbrEspace++;
+                    }else chaine[i] = caractere; i++;
 
-            // Turn off echoing
-            
+                    caractere = getchar();
+                    putchar('*');
 
-            // Read password character by character
-            // printf("Enter password: ");
-            // while ((caractere = getchar()) != '\n') {
-            //     putchar('*');
-            //     chaine[i] = caractere;
-            // }
+                }
+                tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+                if (i!=0)
+                {
+                    if (nbrEspace != strlen(chaine))
+                    {
+                        break;
+                    }
+                    
+                }
+                
+                if (nbrEspace > 0 || caractere == '\n')
+                {
+                 printf("%s", msgerr);                   
+                }    
+            }
 
-            // Restore terminal settings
-           
+            chaine[i] = '\0';
+}
 
+void saisiChainePasswordOther(char chaine[], char msg[], char msgerr[]) {
+     char caractere;
+    struct termios oldt, newt;
+    int i = 0, nbrEspace = 0;
 
+    while (1) {
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL | ICANON);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+        printf("%s ", msg);
+
+        while (1) {
+            caractere = getchar();
+
+            if (caractere == '\n') {
+                break;
+            } else if (caractere == 127 || caractere == 8) { // Backspace
+                if (i > 0) {
+                    printf("\b \b"); // Efface le caractère de l'écran
+                    i--;
+                }
+            } else if (caractere == ' ') {
+                nbrEspace++;
+            } else {
+                chaine[i] = caractere;
+                i++;
+                putchar('*');
+            }
+        }
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+        if (i != 0) {
+            if (nbrEspace != strlen(chaine)) {
+                break;
+            }
+        }
+
+        if (nbrEspace > 0 || caractere == '\n') {
+            printf("%s", msgerr);
+        }
+    }
+      chaine[i] = '\0';
+}
+
+void saisiChainePasswordQuitter(char chaine[], char msg[],char msgerr[]){
+            char caractere;
+            struct termios oldt, newt;
+            int i = 0, j = 0, nbrEspace = 0;
             while(1){
                 tcgetattr(STDIN_FILENO, &oldt);
                 newt = oldt;
@@ -272,11 +404,8 @@ void saisiChainePassword(char chaine[], char msg[],char msgerr[]){
                  printf("%s", msgerr);                   
                 }    
 
-                 chaine[i] = '\0';
             }
-
-            
-       
+            chaine[i] = '\0';       
 }
 
 

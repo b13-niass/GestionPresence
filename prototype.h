@@ -42,7 +42,7 @@ typedef struct{
 typedef struct{
     int id;
     char login[20];
-    char password[20];
+    char password[7];
     char nom[20];
     char prenom[50];
     Date date_naiss;

@@ -289,6 +289,33 @@ int lireFichierMessage(Message message[], char *fichier){
 
 }
 
+void lireFichierHeureDebFin(Heure * hdeb, Heure * hfin, char *fichier) {
+  FILE *fp;
+  char ligne[100];
+  int hd,md,hf,mf;
+
+  fp = fopen(fichier, "r");
+  if (fp == NULL) {
+    printf("Erreur d'ouverture du fichier %s.\n", fichier);
+    // return -1;
+  }
+
+  while (fgets(ligne, sizeof(ligne), fp)) {
+    sscanf(ligne, "%d,%d,%d,%d", 
+    &hd,&md,&hf,&mf);
+    break;
+  }
+
+  hdeb->h = hd;
+  hdeb->mn = md;
+  hfin->h = hf;
+  hfin->mn = mf;
+  
+  // Fermeture du fichier
+  fclose(fp);
+}
+
+
 void marquerMessageLu(int idApp, int numero, char *fichier){
     FILE *file = fopen(fichier, "r+");
     if (file == NULL) {
@@ -325,8 +352,34 @@ void marquerMessageLu(int idApp, int numero, char *fichier){
 
     fclose(file);
 
+}
+
+void changerQuota(char quota[],char *fichier){
+    FILE *file = fopen(fichier, "w");
+    if (file == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return;
+    } 
+
+    fputs(quota, file);
+
+    fclose(file);
 
 }
+
+void changerHeureDebFinCours(Heure h1, Heure h2, char *fichier){
+    FILE *file = fopen(fichier, "w");
+    if (file == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return;
+    } 
+
+    fprintf(file, "%d,%d,%d,%d", h1.h, h1.mn, h2.h, h2.mn);
+
+    fclose(file);
+
+}
+
 
 void ajouterPresence(Presence nouvellePresence, char *fichier) {
     FILE *fp;
